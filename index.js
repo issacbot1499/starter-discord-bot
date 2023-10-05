@@ -265,69 +265,10 @@ async function bulkDeleteMessages(channelId, messages) {
 }
 /** end **/
 
-app.get('/register_commands', async (req, res) => {
-
-  const { guild_id } = req.body;
-
-  let slash_commands = [
-    {
-      "name": "yo",
-      "description": "replies with Yo!",
-      "options": []
-    },
-    {
-      "name": "dm",
-      "description": "sends user a DM",
-      "options": []
-    },
-    {
-      "name": "start_reactor",
-      "description": "Start the Reactor",
-      "options": []
-    },
-    {
-      "name": "stop_reactor",
-      "description": "Stop the Reactor",
-      "options": []
-    },
-    {
-      "name": "start_schedule_delete_service",
-      "description": "Start the schedule delete service",
-      "options": []
-    },
-
-    {
-      "name": "stop_schedule_delete_service",
-      "description": "Stop the schedule delete service",
-      "options": []
-    },
-    {
-      "name": "check_schedule_delete_service",
-      "description": "Check the schedule delete service",
-      "options": []
-    },
-  ]
-  try {
-    // api docs - https://discord.com/developers/docs/interactions/application-commands#create-global-application-command
-    let discord_response = await discord_api.put(
-      `/applications/${APPLICATION_ID}/guilds/${guild_id}/commands`,
-      slash_commands
-    )
-    console.log(discord_response.data)
-    return res.send('commands have been registered')
-  } catch (e) {
-    console.error(e.code)
-    console.error(e.response?.data)
-    return res.send(`${e.code} error from discord`)
-  }
-})
-
 app.get('/', async (req, res) => {
   return res.send('Follow documentation ')
 })
 
-
 app.listen(8999, () => {
 
 })
-
