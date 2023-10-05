@@ -187,7 +187,7 @@ client.on('interactionCreate', async (interaction) => {
     await interaction.reply('Schedule delete service deactivated');
   }
 
-  if (interaction.data.name == "check_service") {
+  if (interaction.commandName == "check_service") {
 
     var status = deleteInterval === undefined || deleteInterval === null
       ? "Schedule delete service has been deactivated."
