@@ -189,6 +189,20 @@ client.on('interactionCreate', async (interaction) => {
 
   if (interaction.commandName == "check_service") {
 
+    const Http = new XMLHttpRequest();
+    const url = 'https://confusion-east-pulsar.glitch.me/';
+    Http.open("GET", url);
+
+    console.log('im raeady');
+
+    setInterval(() => {
+      Http.send();
+      Http.onreadystatechange = (e) => {
+        console.log(Http.responseText)
+      }
+    }, 1 * 60 * 1000)
+
+
     var status = deleteInterval === undefined || deleteInterval === null
       ? "Schedule delete service has been deactivated."
       : "Schedule delete service is currently active and running.";
@@ -199,7 +213,7 @@ client.on('interactionCreate', async (interaction) => {
 
 client.on('messageCreate', (message) => {
   const serverId = message.guild.id;
- 
+
   if (serverStates[serverId]) {
     message
       .react(getRandomEmoji())
