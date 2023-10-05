@@ -8,7 +8,7 @@ import {
 } from "./utils.js";
 import { Client, GatewayIntentBits, Events } from "discord.js";
 import { InteractionType, InteractionResponseType, verifyKeyMiddleware } from "discord-interactions";
-import { ALL_COMMANDS, installCommands } from "./commands.js";
+import { installCommands } from "./commands.js";
 
 const client = new Client({
   partials: ["MESSAGE", "CHANNEL", "REACTION"],
