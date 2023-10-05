@@ -2,7 +2,9 @@ import "dotenv/config";
 import express from "express";
 import axios from "axios";
 import {
+  VerifyDiscordRequest,
   getRandomEmoji,
+  DiscordRequest,
 } from "./utils.js";
 import { Client, GatewayIntentBits } from "discord.js";
 import { InteractionType, InteractionResponseType, verifyKeyMiddleware } from "discord-interactions";
@@ -19,6 +21,8 @@ const PUBLIC_KEY = process.env.PUBLIC_KEY || 'not set'
 const app = express();
 // app.use(bodyParser.json());
 
+app.use(express.json({ verify: VerifyDiscordRequest(process.env.PUBLIC_KEY) }));
+
 const discord_api = axios.create({
   baseURL: 'https://discord.com/api/',
   timeout: 3000,
@@ -32,7 +36,7 @@ const discord_api = axios.create({
 
 const serverStates = {};
 
-app.post('/interactions', verifyKeyMiddleware(PUBLIC_KEY), async (req, res) => {
+app.post('/interactions', async (req, res) => {
   const interaction = req.body;
 
   const { type, id, data, guild_id, channel_id } = req.body;
@@ -161,6 +165,8 @@ app.post('/interactions', verifyKeyMiddleware(PUBLIC_KEY), async (req, res) => {
 });
 
 client.on("messageCreate", (message) => {
+  console.log('hello');
+  console.log(message);
   const serverId = message.guild.id;
 
   if (serverStates[serverId]) {
