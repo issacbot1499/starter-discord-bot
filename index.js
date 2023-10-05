@@ -56,6 +56,7 @@ app.post('/interactions', async (req, res) => {
     console.log(interaction.data.name)
 
     if (interaction.data.name == 'start_reactor') {
+      console.log('guild Id: ', serverId);
       serverStates[serverId] = true;
 
       return res.send({
@@ -173,10 +174,10 @@ app.post('/interactions', async (req, res) => {
 });
 
 client.on(Events.MessageCreate, (message) => {
-  console.log('hello');
-  console.log(message);
-  const serverId = message.guild.id;
 
+  const serverId = message.guild.id;
+  console.log('serverId: ',serverId);
+  console.log('hi: ',serverStates[serverId]);
   if (serverStates[serverId]) {
     message
       .react(getRandomEmoji())
