@@ -6,12 +6,12 @@ import {
   getRandomEmoji,
   DiscordRequest,
 } from "./utils.js";
-import { Client, GatewayIntentBits } from "discord.js";
+import { Client, GatewayIntentBits, Events } from "discord.js";
 import { InteractionType, InteractionResponseType, verifyKeyMiddleware } from "discord-interactions";
 
 const client = new Client({
   partials: ["MESSAGE", "CHANNEL", "REACTION"],
-  intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMessages],
+  intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMessages, GatewayIntentBits.MessageContent],
 });
 
 const APPLICATION_ID = process.env.APPLICATION_ID
@@ -33,6 +33,8 @@ const discord_api = axios.create({
     "Authorization": `Bot ${TOKEN}`
   }
 });
+
+client.login(process.env.TOKEN);
 
 const serverStates = {};
 
@@ -64,7 +66,7 @@ app.post('/interactions', async (req, res) => {
       });
     }
 
-    if (interaction.data.name === "stop_reactor") {
+    if (interaction.data.name == "stop_reactor") {
       serverStates[serverId] = false;
 
       return res.send({
@@ -170,7 +172,7 @@ app.post('/interactions', async (req, res) => {
   }
 });
 
-client.on("messageCreate", (message) => {
+client.on(Events.MessageCreate, (message) => {
   console.log('hello');
   console.log(message);
   const serverId = message.guild.id;
@@ -261,8 +263,6 @@ async function bulkDeleteMessages(channelId, messages) {
   }
 }
 /** end **/
-
-client.login(TOKEN);
 
 app.get('/register_commands', async (req, res) => {
 
