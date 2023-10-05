@@ -324,6 +324,7 @@ app.get('/', async (req, res) => {
   return res.send('Follow documentation ')
 })
 
+client.login(process.env.BOT_TOKEN);
 
 app.listen(3000, () => {
 
