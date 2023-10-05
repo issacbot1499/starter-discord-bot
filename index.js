@@ -64,7 +64,7 @@ app.post('/interactions', async (req, res) => {
       });
     }
 
-    if (interaction.data.name == "stop_reactor") {
+    if (interaction.data.name === "stop_reactor") {
       serverStates[serverId] = false;
 
       return res.send({
@@ -195,7 +195,7 @@ function handleMessageList(message) {
   channelState.messageList.push(message);
 
   channelStates.set(channelId, channelState);
-
+  
   console.log('messageList: ', channelState.messageList);
 }
 
@@ -262,6 +262,8 @@ async function bulkDeleteMessages(channelId, messages) {
 }
 /** end **/
 
+client.login(TOKEN);
+
 app.get('/register_commands', async (req, res) => {
 
   const { guild_id } = req.body;
@@ -319,14 +321,12 @@ app.get('/register_commands', async (req, res) => {
   }
 })
 
-
 app.get('/', async (req, res) => {
   return res.send('Follow documentation ')
 })
 
-client.login(process.env.BOT_TOKEN);
 
-app.listen(3000, () => {
+app.listen(8999, () => {
 
 })
 
