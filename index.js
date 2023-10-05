@@ -36,6 +36,12 @@ const discord_api = axios.create({
 
 const serverStates = {};
 
+const channelStates = new Map();
+
+const messageQueue = new Map();
+
+let deleteInterval;
+
 app.post('/interactions', async (req, res) => {
   const interaction = req.body;
 
@@ -58,7 +64,7 @@ app.post('/interactions', async (req, res) => {
       });
     }
 
-    if (interaction.data.name === "stop_reactor") {
+    if (interaction.data.name == "stop_reactor") {
       serverStates[serverId] = false;
 
       return res.send({
@@ -69,7 +75,7 @@ app.post('/interactions', async (req, res) => {
       });
     }
 
-    if (interaction.data.name === "start_service") {
+    if (interaction.data.name == "start_service") {
       if (!channelStates.has(channelId)) {
         channelStates.set(channelId, {
           messageList: [],
@@ -96,7 +102,7 @@ app.post('/interactions', async (req, res) => {
       });
     }
 
-    if (interaction.data.name === "stop_service") {
+    if (interaction.data.name == "stop_service") {
       if (channelStates.has(channelId)) {
         channelStates.get(channelId).isScheduleDelete = false;
       }
@@ -117,7 +123,7 @@ app.post('/interactions', async (req, res) => {
       });
     }
 
-    if (interaction.data.name === "check_service") {
+    if (interaction.data.name == "check_service") {
       return res.send({
         type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
         data: {
@@ -189,7 +195,7 @@ function handleMessageList(message) {
   channelState.messageList.push(message);
 
   channelStates.set(channelId, channelState);
-  
+
   console.log('messageList: ', channelState.messageList);
 }
 
@@ -319,7 +325,7 @@ app.get('/', async (req, res) => {
 })
 
 
-app.listen(8999, () => {
+app.listen(3000, () => {
 
 })
 
