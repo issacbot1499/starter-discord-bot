@@ -8,6 +8,7 @@ import {
 } from "./utils.js";
 import { Client, GatewayIntentBits, Events } from "discord.js";
 import { InteractionType, InteractionResponseType, verifyKeyMiddleware } from "discord-interactions";
+import { ALL_COMMANDS, installCommands } from "./commands.js";
 
 const client = new Client({
   partials: ["MESSAGE", "CHANNEL", "REACTION"],
@@ -34,8 +35,6 @@ const discord_api = axios.create({
   }
 });
 
-client.login(process.env.TOKEN);
-
 const serverStates = {};
 
 const channelStates = new Map();
@@ -43,151 +42,6 @@ const channelStates = new Map();
 const messageQueue = new Map();
 
 let deleteInterval;
-
-app.post('/interactions', async (req, res) => {
-  const interaction = req.body;
-
-  const { type, id, data, guild_id, channel_id } = req.body;
-
-  const serverId = guild_id;
-  const channelId = channel_id;
-
-  if (interaction.type === InteractionType.APPLICATION_COMMAND) {
-    console.log(interaction.data.name)
-
-    if (interaction.data.name == 'start_reactor') {
-      console.log('guild Id: ', serverId);
-      serverStates[serverId] = true;
-
-      console.log(' serverStates[serverId]: ',  serverStates[serverId]);
-
-      return res.send({
-        type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
-        data: {
-          content: "Reactor has been started!",
-        },
-      });
-    }
-
-    if (interaction.data.name == "stop_reactor") {
-      serverStates[serverId] = false;
-
-      return res.send({
-        type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
-        data: {
-          content: "Reactor has been stopped!",
-        },
-      });
-    }
-
-    if (interaction.data.name == "start_service") {
-      if (!channelStates.has(channelId)) {
-        channelStates.set(channelId, {
-          messageList: [],
-          isScheduleDelete: true,
-        });
-      } else {
-        channelStates.get(channelId).isScheduleDelete = true;
-      }
-
-      if (!messageQueue.has(channelId)) {
-        messageQueue.set(channelId, []);
-      }
-
-      // Start the message queue processing interval (every 1 minutes)
-      deleteInterval = setInterval(() => {
-        processMessageQueue(channelId);
-      }, 1 * 60 * 1000);
-
-      return res.send({
-        type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
-        data: {
-          content: "Schedule delete service started",
-        },
-      });
-    }
-
-    if (interaction.data.name == "stop_service") {
-      if (channelStates.has(channelId)) {
-        channelStates.get(channelId).isScheduleDelete = false;
-      }
-      var status = "";
-      if (deleteInterval === undefined || deleteInterval === null) {
-        status = "Schedule delete service does not exist.";
-      } else {
-        console.log("deleteInterval ", deleteInterval);
-        clearInterval(deleteInterval.id);
-        status = "Schedule delete service stopped";
-      }
-
-      return res.send({
-        type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
-        data: {
-          content: status,
-        },
-      });
-    }
-
-    if (interaction.data.name == "check_service") {
-      return res.send({
-        type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
-        data: {
-          content:
-            deleteInterval === undefined || deleteInterval === null
-              ? "Schedule delete service has been deactivated."
-              : "Schedule delete service is currently active and running.",
-        },
-      });
-    }
-
-    if (interaction.data.name == 'yo') {
-      return res.send({
-        type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
-        data: {
-          content: `Yo ${interaction.member.user.username}!`,
-        },
-      });
-    }
-
-    if (interaction.data.name == 'dm') {
-      // https://discord.com/developers/docs/resources/user#create-dm
-      let c = (await discord_api.post(`/users/@me/channels`, {
-        recipient_id: interaction.member.user.id
-      })).data
-      try {
-        // https://discord.com/developers/docs/resources/channel#create-message
-        let res = await discord_api.post(`/channels/${c.id}/messages`, {
-          content: 'Yo! I got your slash command. I am not able to respond to DMs just slash commands.',
-        })
-        console.log(res.data)
-      } catch (e) {
-        console.log(e)
-      }
-
-      return res.send({
-        // https://discord.com/developers/docs/interactions/receiving-and-responding#responding-to-an-interaction
-        type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
-        data: {
-          content: '👍'
-        }
-      });
-    }
-  }
-});
-
-client.on(Events.MessageCreate, (message) => {
-
-  const serverId = message.guild.id;
-  console.log('serverId: ',serverId);
-  console.log('hi: ',serverStates[serverId]);
-  if (serverStates[serverId]) {
-    message
-      .react(getRandomEmoji())
-      .catch((error) => console.error("Failed to add reaction:", error));
-  }
-
-  handleMessageList(message);
-});
 
 function handleMessageList(message) {
   const channelId = message.channelId;
@@ -200,8 +54,6 @@ function handleMessageList(message) {
   channelState.messageList.push(message);
 
   channelStates.set(channelId, channelState);
-  
-  console.log('messageList: ', channelState.messageList);
 }
 
 /** Schedule Delete Session **/
@@ -275,3 +127,93 @@ app.get('/', async (req, res) => {
 app.listen(3000, () => {
 
 })
+
+client.on('ready', () => {
+  console.log(`Logged in as user ${client.user}`);
+  installCommands();
+})
+
+client.on('interactionCreate', async (interaction) => {
+
+  const serverId = interaction.guildId;
+  console.log('serverId: ', serverId);
+  if (!interaction.isChatInputCommand()) return;
+
+  if (interaction.commandName == 'start_reactor') {
+    serverStates[serverId] = true;
+    await interaction.reply('Reactor has been started!');
+  }
+
+  if (interaction.commandName == 'stop_reactor') {
+    serverStates[serverId] = true;
+    await interaction.reply('Reactor has been stopped!');
+  }
+
+  if (interaction.commandName == 'start_service') {
+    if (!channelStates.has(channelId)) {
+      channelStates.set(channelId, {
+        messageList: [],
+        isScheduleDelete: true,
+      });
+    } else {
+      channelStates.get(channelId).isScheduleDelete = true;
+    }
+
+    if (!messageQueue.has(channelId)) {
+      messageQueue.set(channelId, []);
+    }
+
+    // Start the message queue processing interval (every 1 minutes)
+    deleteInterval = setInterval(() => {
+      processMessageQueue(channelId);
+    }, 1 * 60 * 1000);
+
+    return res.send({
+      type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
+      data: {
+        content: "Schedule delete service started",
+      },
+    });
+  }
+
+  if (interaction.commandName == "stop_service") {
+    if (channelStates.has(channelId)) {
+      channelStates.get(channelId).isScheduleDelete = false;
+    }
+    var status = "";
+    if (deleteInterval === undefined || deleteInterval === null) {
+      status = "Schedule delete service does not exist.";
+    } else {
+      console.log("deleteInterval ", deleteInterval);
+      clearInterval(deleteInterval.id);
+      status = "Schedule delete service stopped";
+    }
+  }
+
+  if (interaction.data.name == "check_service") {
+    return res.send({
+      type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
+      data: {
+        content:
+          deleteInterval === undefined || deleteInterval === null
+            ? "Schedule delete service has been deactivated."
+            : "Schedule delete service is currently active and running.",
+      },
+    });
+  }
+})
+
+client.on('messageCreate', (message) => {
+  const serverId = message.guild.id;
+  console.log('serverId: ', serverId);
+  console.log('serverStates: ', serverStates);
+  console.log('hi: ', serverStates[serverId]);
+  if (serverStates[serverId]) {
+    message
+      .react(getRandomEmoji())
+      .catch((error) => console.error("Failed to add reaction:", error));
+  }
+  handleMessageList(message);
+})
+
+client.login(process.env.TOKEN);

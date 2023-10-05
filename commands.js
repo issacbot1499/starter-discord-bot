@@ -30,7 +30,7 @@ const CHECK_SERVICE = {
   description: "Check the status of the service",
   type: 1,
 };
-
+ 
 const ALL_COMMANDS = [
   START_REACTOR,
   STOP_REACTOR,
@@ -39,4 +39,6 @@ const ALL_COMMANDS = [
   CHECK_SERVICE,
 ];
 
-InstallGlobalCommands(process.env.APP_ID, ALL_COMMANDS);
+export const installCommands = () => {
+    InstallGlobalCommands(process.env.APP_ID, ALL_COMMANDS);
+}

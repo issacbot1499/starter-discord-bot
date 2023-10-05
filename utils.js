@@ -1,6 +1,7 @@
 import "dotenv/config";
 import fetch from "node-fetch";
 import { verifyKey } from "discord-interactions";
+import { ALL_COMMANDS } from "./commands"
 
 export function VerifyDiscordRequest(clientKey) {
   return function (req, res, buf, encoding) {
