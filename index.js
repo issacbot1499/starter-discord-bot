@@ -168,12 +168,7 @@ client.on('interactionCreate', async (interaction) => {
       processMessageQueue(channelId);
     }, 1 * 60 * 1000);
 
-    return res.send({
-      type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
-      data: {
-        content: "Schedule delete service started",
-      },
-    });
+    await interaction.reply('Schedule delete service started');
   }
 
   if (interaction.commandName == "stop_service") {
@@ -188,26 +183,23 @@ client.on('interactionCreate', async (interaction) => {
       clearInterval(deleteInterval.id);
       status = "Schedule delete service stopped";
     }
+
+    await interaction.reply('Schedule delete service deactivated');
   }
 
   if (interaction.data.name == "check_service") {
-    return res.send({
-      type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
-      data: {
-        content:
-          deleteInterval === undefined || deleteInterval === null
-            ? "Schedule delete service has been deactivated."
-            : "Schedule delete service is currently active and running.",
-      },
-    });
+
+    var status = deleteInterval === undefined || deleteInterval === null
+      ? "Schedule delete service has been deactivated."
+      : "Schedule delete service is currently active and running.";
+
+    await interaction.reply(status);
   }
 })
 
 client.on('messageCreate', (message) => {
   const serverId = message.guild.id;
-  console.log('serverId: ', serverId);
-  console.log('serverStates: ', serverStates);
-  console.log('hi: ', serverStates[serverId]);
+ 
   if (serverStates[serverId]) {
     message
       .react(getRandomEmoji())
