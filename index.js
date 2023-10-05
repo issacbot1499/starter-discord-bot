@@ -59,6 +59,8 @@ app.post('/interactions', async (req, res) => {
       console.log('guild Id: ', serverId);
       serverStates[serverId] = true;
 
+      console.log(' serverStates[serverId]: ',  serverStates[serverId]);
+
       return res.send({
         type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
         data: {
