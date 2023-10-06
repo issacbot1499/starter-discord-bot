@@ -6,8 +6,7 @@ import {
   getRandomEmoji,
   DiscordRequest,
 } from "./utils.js";
-import { Client, GatewayIntentBits, Events } from "discord.js";
-import { InteractionType, InteractionResponseType, verifyKeyMiddleware } from "discord-interactions";
+import { Client, GatewayIntentBits } from "discord.js";
 import { installCommands } from "./commands.js";
 
 const client = new Client({
@@ -23,6 +22,20 @@ const app = express();
 // app.use(bodyParser.json());
 
 app.use(express.json({ verify: VerifyDiscordRequest(process.env.PUBLIC_KEY) }));
+
+const glitch_url = axios.create({
+  baseURL: 'https://confusion-east-pulsar.glitch.me/'
+});
+
+app.post('/wakeUp', async (req, res) => {
+  try {
+      await glitch_url.get();
+  } catch (e) {
+      res.send({ success: 0, details: e.message });
+  } finally {
+      res.send({ success: 1 });
+  }
+});
 
 const discord_api = axios.create({
   baseURL: 'https://discord.com/api/',
@@ -188,21 +201,6 @@ client.on('interactionCreate', async (interaction) => {
   }
 
   if (interaction.commandName == "check_service") {
-
-    const Http = new XMLHttpRequest();
-    const url = 'https://confusion-east-pulsar.glitch.me/';
-    Http.open("GET", url);
-
-    console.log('im raeady');
-
-    setInterval(() => {
-      Http.send();
-      Http.onreadystatechange = (e) => {
-        console.log(Http.responseText)
-      }
-    }, 1 * 60 * 1000)
-
-
     var status = deleteInterval === undefined || deleteInterval === null
       ? "Schedule delete service has been deactivated."
       : "Schedule delete service is currently active and running.";
